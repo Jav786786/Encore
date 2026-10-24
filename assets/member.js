@@ -80,18 +80,21 @@ var BASE_EVENTS=[
 ];
 var EVENTS=BASE_EVENTS.slice(), PE=null;
 var TIERS=[
+ {k:'explorer',name:'Encore Explorer',price:'£0',cr:0,badge:'Free',rate:'Credit packs from £1.06 a credit',free:1,
+  sub:'The personalised weekly edit, free. Buy credits only when something grabs you.',
+  perks:['Personalised weekly edit','Buy credit packs whenever you book','No monthly fee, leave whenever']},
  {k:'access',name:'Encore Access',price:'£9.99',cr:5,badge:'Entry',rate:'£2.00 a credit',
   sub:'Member pricing and the weekly edit. Credits for a cheap Tuesday.',
-  perks:['Personalised weekly edit','Member pricing, no booking fees','Member-only releases']},
+  perks:['Everything in Explorer','5 credits a month, rolling over','Member pricing, no booking fees','Member-only releases']},
  {k:'select',name:'Encore Select',price:'£39.99',cr:25,badge:'Regular',rate:'£1.60 a credit',
   sub:'One proper night out a month, or three small ones.',
   perks:['Everything in Access','25 credits a month, rolling over','One free plus-one a month']},
- {k:'plus',name:'Encore Plus',price:'£89.99',cr:70,badge:'Most popular',rate:'£1.29 a credit',
+ {k:'plus',name:'Encore Rock Star',price:'£89.99',cr:70,badge:'Most popular',rate:'£1.29 a credit',
   sub:'Two gigs and a play, or six smaller things across the month.',
   perks:['Everything in Select','70 credits a month, rolling over','Group planning and shared plans','First window on member-only releases']},
  {k:'icon',name:'Encore Icon',price:'£119.99',cr:110,badge:'Best rate',rate:'£1.09 a credit',
   sub:'The best rate we do, and the ballot for the things money alone will not get you.',
-  perks:['Everything in Plus','110 credits a month, rolling over','Formula E paddock ballot, twice a season','Opening nights and two plus-ones']}
+  perks:['Everything in Rock Star','110 credits a month, rolling over','Formula E paddock ballot, twice a season','Opening nights and two plus-ones']}
 ];
 var CHIPS=[{k:'all',l:'All events'},{k:'tonight',l:'Tonight'},{k:'weekend',l:'This weekend'},{k:'Sports',l:'Sports'},{k:'Art',l:'Art'},{k:'Outdoors',l:'Outdoors'},
            {k:'Theatre',l:'Theatre'},{k:'Comedy',l:'Comedy'},{k:'Food',l:'Food'},{k:'Music',l:'Music'},{k:'Surprise',l:'Surprise me'},{k:'cheap',l:'Under 20 credits'}];
@@ -107,8 +110,12 @@ function sdefaults(){return {screen:'landing',picked:['Art & exhibitions','Fashi
 function sload(){try{var o=JSON.parse(sessionStorage.getItem(SKEY)||'null');if(o&&o.screen){var d=sdefaults();for(var k in o)d[k]=o[k];return d;}}catch(e){}return sdefaults();}
 function ssave(){try{sessionStorage.setItem(SKEY,JSON.stringify(S));}catch(e){}}
 var S=sload();
-function tier(){for(var i=0;i<TIERS.length;i++)if(TIERS[i].k===S.plan)return TIERS[i];return TIERS[2];}
+function tierBy(k){for(var i=0;i<TIERS.length;i++)if(TIERS[i].k===k)return TIERS[i];return null;}
+function tier(){return tierBy(S.plan)||tierBy('plus');}
 function bal(){return S.credits-S.spent;}
+function payg(){return !!tier().free;}
+function freeP1(){return ['select','plus','icon'].indexOf(tier().k)>-1;}
+function renewTxt(){return payg()?'pay as you go':'renews 9 Nov';}
 
 function syncEvents(){P=pload();PE=partnerEventForMember();EVENTS=(PE?[PE]:[]).concat(BASE_EVENTS);}
 function byId(id){for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)return EVENTS[i];
@@ -137,20 +144,20 @@ function scrLanding(){
       '<h1 class="t hero-t">Discover great<br>experiences.<br>Again and again.</h1></div>'+
     '<div class="l-reels"><div class="reels">'+reel('amapiano','Day party · Sun',0,8,-5)+reel('lionesses','Match · Sun 2pm',34,1,3)+reel('tatetour','Gallery · Sun',67,9,-2)+'</div></div>'+
     '<div class="l-body"><p class="sub lead">Gigs, exhibitions, matches, plays and daft ideas, on weeknights and weekends. One membership, monthly credits, and recommendations that know you.</p>'+
-      '<div class="facts">'+f3('Membership','From £9.99 a month')+f3('Credits','Roll over')+f3('Booking fees','None')+'</div>'+
+      '<div class="facts">'+f3('Membership','Free, or from £9.99')+f3('Credits','Roll over')+f3('Booking fees','None')+'</div>'+
       '<div class="ctas"><button class="btn" data-act="go" data-v="connect">Create your account</button>'+
       '<button class="btn ghost" data-act="go" data-v="connect">I already have an account</button></div>'+
-      '<p class="sub" style="margin-top:14px;font-size:11.5px">Monthly membership, cancel any time. Credits roll over. No booking fees on top.</p></div>'+
+      '<p class="sub" style="margin-top:14px;font-size:11.5px">Free to join. Paid plans are monthly, cancel any time. Credits roll over. No booking fees on top.</p></div>'+
   '</div>';}
 function scrConnect(){
   return obar('landing','Step 1 of 3')+
    '<h1 class="t">Create your account.</h1>'+
-   '<p class="sub" style="margin-top:12px">It takes a minute. You only pay once you pick a plan.</p>'+
+   '<p class="sub" style="margin-top:12px">It takes a minute. Explorer is free; you only pay for a plan or credits.</p>'+
    '<div style="margin-top:22px;display:flex;flex-direction:column;gap:10px">'+
      '<button class="btn" data-act="signup">Continue with Apple</button>'+
      '<button class="btn ghost" data-act="signup">Continue with Google</button>'+
      '<button class="btn ghost" data-act="signup">Continue with email</button></div>'+
-   '<div class="card" style="margin-top:20px">'+ul(['Credits that roll over, month to month','No booking fees on top','One free plus-one a month','Pause or cancel any time'])+'</div>'+
+   '<div class="card" style="margin-top:20px">'+ul(['Start free with Explorer, buy credits as you go','Credits that roll over, month to month','No booking fees on top','Pause or cancel any time'])+'</div>'+
    '<p class="sub" style="margin-top:12px;font-size:11.5px">By continuing you agree to Encore’s terms and privacy policy. Encore is open to everyone in the UK.</p>';}
 var RADIUS=['Walkable','2 miles','City-wide','Anywhere'], RCOUNT=[41,126,318,540];
 function radiusTxt(){return RADIUS[S.radius]+' · '+RCOUNT[S.radius]+' experiences this month';}
@@ -169,25 +176,27 @@ function scrTaste(){
    '<hr class="hair" style="margin:24px 0">'+
    '<h2 class="t" style="font-size:20px">Who are you dragging along?</h2>'+
    '<div class="avas" style="margin-top:12px">'+ava('JW','Jonah')+ava('EL','Ellis')+ava('PR','Priya')+ava('+','Invite')+'</div>'+
-   '<p class="sub" style="margin-top:12px;font-size:11.5px">Every member gets one free plus-one a month. Your friends do not need Encore to come out.</p>'+
+   '<p class="sub" style="margin-top:12px;font-size:11.5px">From Select up, one plus-one a month is free. Your friends do not need Encore to come out.</p>'+
    '<button class="btn" style="margin-top:22px" data-act="go" data-v="plans">Continue</button>';}
+function joinTxt(t){return t.free?'Join '+t.name+' · free':'Join '+t.name+' · '+t.price+' a month';}
 function scrPlans(){
   var h=obar('taste','Step 3 of 3')+
    '<h1 class="t">Pick your appetite.</h1>'+
-   '<p class="sub" style="margin-top:10px;max-width:620px">Credits are Encore\'s currency — roughly £1.20 of experience each. The bigger the plan, the further every pound stretches.</p>'+
+   '<p class="sub" style="margin-top:10px;max-width:620px">Credits are Encore\'s currency — roughly £1.20 of experience each. Start free and buy credits as you go, or pick a plan: the bigger the plan, the further every pound stretches.</p>'+
    '<div class="tiers">';
   TIERS.forEach(function(t){var on=t.k===S.plan;
-    h+='<div class="tiercard'+(on?' on':'')+'">'+(t.k==='plus'?'<span class="enbadge">'+t.badge+'</span>':'')+
+    h+='<div class="tiercard'+(on?' on':'')+(t.free?' free':'')+'">'+(t.k==='plus'?'<span class="enbadge">'+t.badge+'</span>':'')+
       '<button type="button" class="tierpick" data-act="plan" data-v="'+t.k+'" aria-pressed="'+on+'">'+
       '<div class="row-b"><span class="name">'+t.name.replace('Encore ','')+'</span>'+(t.k==='plus'?'':'<span class="lab">'+t.badge+'</span>')+'</div>'+
-      '<div class="row-b" style="margin-top:10px"><span style="font:800 24px/1 var(--font-display)">'+t.price+'<span class="sub" style="font-size:11px"> /month</span></span>'+
-      '<span class="mono" style="font-size:12px;font-weight:700">'+t.cr+' credits</span></div>'+
+      '<div class="row-b" style="margin-top:10px">'+(t.free?'<span style="font:800 24px/1 var(--font-display)">Free<span class="sub" style="font-size:11px">&nbsp; no monthly fee</span></span>'+
+        '<span class="mono" style="font-size:12px;font-weight:700">Pay as you go</span>':
+        '<span style="font:800 24px/1 var(--font-display)">'+t.price+'<span class="sub" style="font-size:11px"> /month</span></span>'+
+        '<span class="mono" style="font-size:12px;font-weight:700">'+t.cr+' credits</span>')+'</div>'+
       '<p class="sub" style="margin-top:8px;font-size:12.5px">'+t.sub+'</p>'+
       '<p class="mono" style="margin-top:6px;font-size:10.5px;color:var(--mut)">'+t.rate+'</p></button>'+
-      '<div class="perks">'+ul(t.perks)+(on?'<button class="btn join-in" style="margin-top:14px" data-act="join">Join '+t.name+' · '+t.price+' a month</button>':'')+'</div>'+
+      '<div class="perks">'+ul(t.perks)+(on?'<button class="btn join-in" style="margin-top:14px" data-act="join">'+joinTxt(t)+'</button>':'')+'</div>'+
     '</div>';});
-  var t=tier();
-  return h+'</div><button class="btn join-out" data-act="join">Join '+t.name+' · '+t.price+' a month</button>'+
+  return h+'</div><button class="btn join-out" data-act="join">'+joinTxt(tier())+'</button>'+
    '<p class="sub" style="margin-top:14px;font-size:11.5px;text-align:center">Unused credits roll over. Pause any month. Cancel in two taps.</p>';}
 
 /* ---------------------------------------------------------------- discover */
@@ -200,7 +209,7 @@ function filtered(){var q=S.q.toLowerCase().trim();
 function gridCols(){var w=window.innerWidth;return w>=1360?4:w>=960?3:2;}
 function tileHtml(e,i){
   return '<button class="vt'+(i%3===0?' tall':'')+(e.partner?' newp':'')+'" data-act="open" data-v="'+e.id+'" style="--cat:'+(CAT[e.cat]||PINK)+'" aria-label="'+esc(e.title)+', '+e.cr+' credits">'+
-    '<span class="vart'+(e.myst?' myst':'')+'">'+(e.myst?'<span class="vq" aria-hidden="true">???</span>':clip(e)+'<span class="vshape"></span>')+
+    '<span class="vart'+(e.myst?' myst':'')+'">'+(e.myst?'':clip(e)+'<span class="vshape"></span>')+
       '<span class="vprog"><i style="animation-delay:-'+(i*1.3)+'s"></i></span>'+
       '<span class="scrim tl">'+esc(e.myst?'Surprise':e.cat)+'</span><span class="scrim tr">'+e.cr+' cr</span>'+
       (e.partner?'<span class="scrim bl">'+e.left+' left</span>':(e.myst?'<span class="scrim bl">'+esc(e.tag)+'</span>':''))+
@@ -220,53 +229,225 @@ function chipSelect(){var GROUPS=[['',['all']],['When',['tonight','weekend']],['
 function scrDiscover(){
   return '<div class="dhead"><div><p class="lab">Wednesday, Hackney</p><h1 class="t" style="margin-top:6px">Alright Maya — what are we doing?</h1></div>'+
       '<div class="crnum"><b>'+bal()+'</b><p class="lab">credits</p></div></div>'+
+    (payg()?'<div class="xnote"><div><p class="lab" style="color:var(--green-deep)">Explorer · your weekly edit</p>'+
+      '<p class="sub">Picked for you this week. Buy credits only when you book: packs from £14.</p></div>'+
+      '<button class="chip" data-act="go" data-v="wallet">Buy credits</button></div>':'')+
     '<div class="dtools"><label class="search">'+ico('search',18)+'<span class="sr">Search</span>'+
       '<input id="q" type="search" placeholder="Search London — sport, art, tonight…" value="'+esc(S.q)+'" data-act="q" autocomplete="off"></label>'+chipSelect()+'</div>'+
     '<div id="dres">'+discoverResults()+'</div>';}
 
-/* simulated London map: equirectangular box, lon -0.16..0.045, lat 51.478..51.612; venue positions approximate */
-var MAPBOX={w:-0.16,e:0.045,s:51.478,n:51.612,vw:353,vh:370};
-var MAPPOS={mystery:[-0.0875,51.5257],amapiano:[-0.0755,51.3745],lionesses:[0.237,51.443],o2climb:[0.003,51.503],skating:[-0.130,51.594],
-  magic:[-0.142,51.518],salsa:[-0.105,51.522],knock2bag:[-0.052,51.546],karting:[-0.066,51.604],quilt:[-0.072,51.535],cooking:[-0.083,51.498],
-  qbtalk:[-0.123,51.534],terrarium:[-0.024,51.543],manon:[-0.122,51.513],tatetour:[-0.099,51.508],pe_eprix:[0.029,51.508]};
-var MAPEDGE={amapiano:['Croydon ↓',58,93],lionesses:['Dartford →',90,93]};
-function mapXY(ll){var b=MAPBOX;return [(ll[0]-b.w)/(b.e-b.w)*100,(b.n-ll[1])/(b.n-b.s)*100];}
-function mapPath(pts){var b=MAPBOX,d='';for(var i=0;i<pts.length;i++){var p=mapXY(pts[i]);d+=(i?' L':'M')+(p[0]*b.vw/100).toFixed(1)+' '+(p[1]*b.vh/100).toFixed(1);}return d;}
-function mapBase(list){var b=MAPBOX,s='',i;
-  function el(ll,rx,ry){var p=mapXY(ll);return '<ellipse cx="'+(p[0]*b.vw/100).toFixed(1)+'" cy="'+(p[1]*b.vh/100).toFixed(1)+'" rx="'+rx+'" ry="'+ry+'"/>';}
-  function lab(ll,txt,anchor){var p=mapXY(ll);return '<text x="'+(p[0]*b.vw/100).toFixed(1)+'" y="'+(p[1]*b.vh/100).toFixed(1)+'" text-anchor="'+(anchor||'middle')+'">'+txt+'</text>';}
-  s+='<rect width="'+b.vw+'" height="'+b.vh+'" fill="#EDE5D6"/>';
-  s+='<g fill="#DDF0E5" stroke="#3FB57A" stroke-width="1">'+el([-0.160,51.507],24,11)+el([-0.155,51.528],14,10)+el([-0.165,51.563],20,14)+el([-0.040,51.536],15,8)+el([0.000,51.477],14,9)+el([-0.016,51.546],10,12)+el([-0.130,51.592],16,8)+'</g>';
-  s+='<g fill="none" stroke="#E0D6C4" stroke-width="1.5" stroke-linecap="round">'+
-     '<path d="'+mapPath([[-0.20,51.555],[-0.13,51.533],[-0.08,51.530],[-0.02,51.548],[0.07,51.560]])+'"/>'+
-     '<path d="'+mapPath([[-0.12,51.62],[-0.115,51.56],[-0.11,51.513],[-0.10,51.47]])+'"/>'+
-     '<path d="'+mapPath([[-0.066,51.62],[-0.072,51.56],[-0.085,51.515],[-0.075,51.47]])+'"/>'+
-     '<path d="'+mapPath([[-0.20,51.50],[-0.14,51.512],[-0.08,51.515],[0.07,51.512]])+'"/></g>';
-  s+='<path d="'+mapPath([[-0.20,51.468],[-0.175,51.478],[-0.15,51.482],[-0.125,51.497],[-0.120,51.508],[-0.100,51.509],[-0.078,51.507],[-0.055,51.502],[-0.035,51.497],[-0.020,51.488],[-0.008,51.492],[-0.002,51.505],[0.010,51.507],[0.025,51.501],[0.040,51.498],[0.070,51.503]])+'" fill="none" stroke="#9CC3DE" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>';
-  var z=mapXY([-0.105,51.513]);s+='<circle cx="'+(z[0]*b.vw/100).toFixed(1)+'" cy="'+(z[1]*b.vh/100).toFixed(1)+'" r="92" fill="none" stroke="#17130F" stroke-opacity=".35" stroke-width="1"/>';
-  for(i=0;i<list.length;i++)if(list[i].myst&&MAPPOS[list[i].id]){var m=mapXY(MAPPOS[list[i].id]);
-    s+='<circle cx="'+(m[0]*b.vw/100).toFixed(1)+'" cy="'+(m[1]*b.vh/100).toFixed(1)+'" r="24" fill="#FF4FA3" fill-opacity=".22" stroke="#17130F" stroke-width="1"/>';}
-  s+='<g font-family="Space Mono, Courier New, monospace" font-size="8" letter-spacing=".08em" fill="#665F55">'+
-     lab([-0.105,51.4995],'ZONE 1')+lab([-0.125,51.4875],'THE THAMES','end')+lab([-0.040,51.552],'HACKNEY')+lab([-0.142,51.545],'CAMDEN')+lab([-0.060,51.592],'TOTTENHAM')+lab([0.000,51.484],'GREENWICH')+lab([-0.150,51.497],'HYDE PARK')+'</g>';
-  return '<svg viewBox="0 0 '+b.vw+' '+b.vh+'" aria-hidden="true">'+s+'</svg>';}
+/* London map, drawn here so it works offline. Equirectangular with a cos(lat) correction; geography simplified, venue positions approximate.
+   Drag to move, pinch or scroll to zoom. Pins and labels are HTML over the SVG, so they keep their size at every zoom. */
+ICO.plus='<path d="M12 5.5v13M5.5 12h13"/>';ICO.minus='<path d="M5.5 12h13"/>';
+ICO.locate='<path d="M19.5 4.5L4.5 11l6.6 1.9 1.9 6.6z"/>';ICO.fit='<path d="M4.5 9V4.5H9M19.5 9V4.5H15M4.5 15v4.5H9M19.5 15v4.5H15"/>';
+var MB={w:-0.23,e:0.27,s:51.36,n:51.625},MK=1000/(MB.n-MB.s),MCOS=Math.cos(51.5*Math.PI/180);
+var MW=(MB.e-MB.w)*MCOS*MK,MH=1000;
+function mproj(ll){return [(ll[0]-MB.w)*MCOS*MK,(MB.n-ll[1])*MK];}
+function mpath(pts,close){var d='';for(var i=0;i<pts.length;i++){var p=mproj(pts[i]);d+=(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);}return d+(close?'Z':'');}
+var MAPPOS={mystery:[-0.0875,51.5257],amapiano:[-0.0925,51.3757],lionesses:[0.229,51.4435],o2climb:[0.0032,51.503],skating:[-0.130,51.5942],
+  magic:[-0.142,51.518],salsa:[-0.105,51.522],knock2bag:[-0.0545,51.5455],karting:[-0.0662,51.6043],quilt:[-0.0763,51.5317],cooking:[-0.083,51.498],
+  qbtalk:[-0.1088,51.5288],terrarium:[-0.024,51.543],manon:[-0.1222,51.5129],tatetour:[-0.0993,51.5076],pe_eprix:[0.0295,51.5085]};
+var MYOU=[-0.045,51.537];
+var M_THAMES=[[-0.24,51.487],[-0.225,51.485],[-0.215,51.470],[-0.200,51.464],[-0.185,51.468],[-0.172,51.477],[-0.160,51.482],[-0.145,51.484],[-0.128,51.486],
+  [-0.123,51.493],[-0.121,51.502],[-0.117,51.508],[-0.106,51.5095],[-0.095,51.5088],[-0.085,51.5078],[-0.075,51.5055],[-0.062,51.5035],[-0.050,51.5045],
+  [-0.040,51.5085],[-0.030,51.5065],[-0.026,51.498],[-0.020,51.489],[-0.010,51.4855],[-0.002,51.489],[-0.004,51.497],[-0.006,51.5045],[0.000,51.5085],
+  [0.008,51.5095],[0.015,51.505],[0.018,51.497],[0.026,51.4935],[0.045,51.4945],[0.065,51.4955],[0.085,51.502],[0.105,51.508],[0.125,51.506],
+  [0.150,51.498],[0.175,51.487],[0.195,51.476],[0.215,51.468],[0.240,51.463],[0.280,51.462],[0.310,51.465],[0.345,51.455]];
+var M_LEA=[[-0.005,51.509],[-0.010,51.515],[-0.015,51.530],[-0.020,51.545],[-0.030,51.560],[-0.045,51.575],[-0.050,51.590],[-0.048,51.605],[-0.040,51.630]];
+var M_WATER=[[[0.010,51.5072],[0.030,51.5074],[0.030,51.5058],[0.010,51.5056]],[[0.040,51.5078],[0.073,51.5082],[0.073,51.5065],[0.040,51.5062]],
+  [[-0.028,51.5066],[-0.012,51.5066],[-0.012,51.5050],[-0.028,51.5050]],[[-0.176,51.5055],[-0.163,51.5052],[-0.162,51.5040],[-0.170,51.5038]],
+  [[-0.058,51.580],[-0.040,51.581],[-0.033,51.595],[-0.045,51.600],[-0.055,51.596]],[[-0.045,51.605],[-0.035,51.606],[-0.030,51.630],[-0.040,51.630]]];
+var M_PARKS=[
+  [[-0.191,51.511],[-0.160,51.513],[-0.152,51.510],[-0.155,51.502],[-0.175,51.501],[-0.191,51.503]],
+  [[-0.165,51.531],[-0.158,51.536],[-0.148,51.535],[-0.145,51.528],[-0.150,51.522],[-0.162,51.523]],
+  [[-0.185,51.568],[-0.170,51.575],[-0.152,51.573],[-0.148,51.563],[-0.160,51.555],[-0.178,51.558]],
+  [[-0.052,51.538],[-0.040,51.542],[-0.028,51.539],[-0.032,51.534],[-0.046,51.533]],
+  [[-0.035,51.548],[-0.022,51.552],[-0.020,51.562],[-0.032,51.565],[-0.040,51.556]],
+  [[-0.025,51.535],[-0.012,51.537],[-0.008,51.548],[-0.018,51.552],[-0.024,51.545]],
+  [[-0.062,51.568],[-0.052,51.572],[-0.048,51.580],[-0.058,51.580]],
+  [[-0.142,51.591],[-0.128,51.597],[-0.118,51.594],[-0.125,51.588],[-0.136,51.587]],
+  [[-0.108,51.568],[-0.098,51.572],[-0.094,51.566],[-0.102,51.562]],
+  [[-0.166,51.481],[-0.150,51.482],[-0.148,51.476],[-0.162,51.475]],
+  [[-0.158,51.461],[-0.140,51.462],[-0.137,51.455],[-0.152,51.453]],
+  [[-0.006,51.481],[0.006,51.482],[0.007,51.474],[-0.004,51.473]],
+  [[-0.008,51.472],[0.012,51.472],[0.012,51.465],[-0.004,51.464]],
+  [[-0.112,51.454],[-0.102,51.455],[-0.102,51.447],[-0.110,51.447]],
+  [[-0.083,51.447],[-0.074,51.447],[-0.074,51.442],[-0.083,51.442]],
+  [[-0.078,51.425],[-0.066,51.424],[-0.065,51.416],[-0.075,51.416]],
+  [[0.020,51.555],[0.050,51.557],[0.052,51.550],[0.025,51.548]],
+  [[-0.235,51.442],[-0.218,51.440],[-0.215,51.425],[-0.232,51.422]],
+  [[0.070,51.470],[0.092,51.471],[0.092,51.462],[0.072,51.461]],
+  [[-0.080,51.366],[-0.068,51.366],[-0.068,51.361],[-0.080,51.361]],
+  [[-0.062,51.355],[-0.040,51.357],[-0.038,51.345],[-0.058,51.343]],[[0.240,51.448],[0.256,51.449],[0.257,51.441],[0.242,51.440]]];
+var M_HWY=[
+  [[-0.235,51.565],[-0.20,51.585],[-0.165,51.598],[-0.13,51.612],[-0.095,51.614],[-0.06,51.613],[-0.02,51.607],[0.01,51.597],[0.035,51.585],[0.055,51.565],[0.065,51.545],[0.072,51.528],[0.075,51.517]],
+  [[-0.24,51.478],[-0.20,51.468],[-0.165,51.457],[-0.14,51.452],[-0.11,51.445],[-0.08,51.443],[-0.05,51.440],[-0.02,51.447],[0.005,51.457],[0.03,51.47],[0.05,51.48],[0.065,51.49]],
+  [[-0.06,51.5115],[-0.03,51.513],[0.0,51.512],[0.03,51.515],[0.07,51.517],[0.12,51.52],[0.17,51.515],[0.22,51.505],[0.27,51.495]],
+  [[-0.075,51.49],[-0.04,51.478],[-0.01,51.468],[0.03,51.455],[0.07,51.452],[0.11,51.447],[0.16,51.442],[0.20,51.438],[0.27,51.432],[0.34,51.428]],
+  [[-0.03,51.53],[0.0,51.545],[0.03,51.555],[0.06,51.565],[0.1,51.578],[0.15,51.59],[0.2,51.6]],
+  [[0.0,51.545],[-0.005,51.525],[0.0,51.505],[0.003,51.49],[0.01,51.475]],
+  [[0.25,51.625],[0.255,51.55],[0.26,51.49],[0.255,51.44],[0.24,51.40],[0.22,51.36]]];
+var M_ROADS=[
+  [[-0.175,51.522],[-0.13,51.5275],[-0.105,51.529],[-0.088,51.527],[-0.077,51.522],[-0.072,51.512],[-0.073,51.502],[-0.09,51.494],[-0.11,51.493],[-0.13,51.492],[-0.155,51.494],[-0.17,51.499],[-0.178,51.51],[-0.175,51.522]],
+  [[-0.16,51.514],[-0.13,51.516],[-0.11,51.517],[-0.09,51.515],[-0.072,51.516],[-0.05,51.521],[-0.03,51.525],[-0.01,51.535],[0.0,51.541]],
+  [[-0.08,51.523],[-0.075,51.545],[-0.073,51.565],[-0.07,51.59],[-0.066,51.625]],
+  [[-0.108,51.529],[-0.105,51.545],[-0.12,51.565],[-0.14,51.58],[-0.16,51.6],[-0.185,51.625]],
+  [[-0.055,51.548],[-0.035,51.56],[-0.01,51.57],[0.01,51.578]],
+  [[-0.163,51.517],[-0.18,51.535],[-0.205,51.555],[-0.235,51.58]],
+  [[-0.178,51.517],[-0.2,51.518],[-0.235,51.516]],
+  [[-0.16,51.5],[-0.19,51.495],[-0.235,51.49]],
+  [[-0.13,51.49],[-0.15,51.47],[-0.17,51.455],[-0.195,51.44],[-0.235,51.415]],
+  [[-0.12,51.48],[-0.135,51.46],[-0.15,51.44],[-0.17,51.42],[-0.195,51.39]],
+  [[-0.11,51.493],[-0.115,51.47],[-0.118,51.45],[-0.12,51.43],[-0.11,51.405],[-0.1,51.38],[-0.095,51.36],[-0.105,51.33],[-0.11,51.30]],
+  [[-0.095,51.375],[-0.075,51.35],[-0.06,51.32],[-0.05,51.30]],
+  [[-0.02,51.47],[-0.015,51.45],[0.0,51.42],[0.02,51.39],[0.04,51.36]],
+  [[0.0,51.46],[0.05,51.44],[0.1,51.42],[0.15,51.405],[0.2,51.39]],
+  [[0.04,51.49],[0.07,51.49],[0.11,51.488],[0.15,51.48],[0.18,51.473],[0.21,51.458],[0.23,51.448],[0.26,51.44],[0.31,51.445]],
+  [[0.0,51.541],[0.04,51.548],[0.07,51.557],[0.1,51.565]],
+  [[-0.105,51.487],[-0.08,51.478],[-0.06,51.473],[-0.03,51.473],[-0.01,51.468]],
+  [[-0.09,51.49],[-0.09,51.465],[-0.085,51.44],[-0.08,51.42]],
+  [[-0.2,51.375],[-0.15,51.372],[-0.1,51.373],[-0.05,51.372],[0.0,51.375]],
+  [[-0.1,51.565],[-0.105,51.585],[-0.11,51.605],[-0.11,51.625]]];
+/* [text, lon, lat, level (2 = only when zoomed in), style] */
+var M_LABELS=[['City',-0.091,51.5155,1],['West End',-0.138,51.5115,1],['Hackney',-0.060,51.553,1],['Camden',-0.143,51.541,1],['Stratford',0.004,51.536,1],
+  ['Tottenham',-0.080,51.590,1],['Brixton',-0.114,51.462,1],['Croydon',-0.099,51.383,1],['Dartford',0.214,51.452,1],['Woolwich',0.068,51.486,1],
+  ['Walthamstow',-0.010,51.586,1],['Wimbledon',-0.205,51.418,1],['Erith',0.178,51.479,1],['Barking',0.080,51.537,1],['Ilford',0.070,51.560,1],['Greenwich',-0.022,51.479,1],
+  ['Islington',-0.103,51.540,2],['Shoreditch',-0.078,51.5265,2],['Bethnal Green',-0.055,51.527,2],['Dalston',-0.075,51.548,2],['Stoke Newington',-0.077,51.562,2],
+  ['King’s Cross',-0.124,51.533,2],['Westminster',-0.135,51.4985,2],['Chelsea',-0.170,51.488,2],['Southwark',-0.092,51.500,2],['Peckham',-0.069,51.472,2],
+  ['Clapham',-0.142,51.467,2],['Lewisham',-0.013,51.458,2],['Canary Wharf',-0.019,51.5015,2],['Royal Docks',0.052,51.511,2],['Bow',-0.022,51.528,2],
+  ['Hampstead',-0.180,51.553,2],['Highgate',-0.146,51.573,2],['Wood Green',-0.112,51.598,2],['Streatham',-0.130,51.430,2],['Sydenham',-0.055,51.428,2],['Eltham',0.055,51.450,2],
+  ['Hyde Park',-0.172,51.5075,2,'pk'],['Regent’s Park',-0.155,51.529,2,'pk'],['Hampstead Heath',-0.165,51.565,2,'pk'],['Victoria Park',-0.040,51.5375,2,'pk'],
+  ['Greenwich Park',0.001,51.4775,2,'pk'],['Battersea Park',-0.157,51.4785,2,'pk'],['Hackney Marshes',-0.030,51.5565,2,'pk'],['Crystal Palace Park',-0.071,51.420,2,'pk'],
+  ['River Thames',-0.152,51.4805,1,'wt'],['River Thames',0.125,51.5025,1,'wt']];
+
+function mapSvg(list){
+  function g(cls,arr,close){return '<g class="'+cls+'">'+arr.map(function(p){return '<path d="'+mpath(p,close)+'"/>';}).join('')+'</g>';}
+  var s='<rect class="m-land" x="-2000" y="-2000" width="'+(MW+4000).toFixed(0)+'" height="'+(MH+4000)+'"/>'+
+    g('m-park',M_PARKS,1)+g('m-water',M_WATER,1)+
+    '<path class="m-river" d="'+mpath(M_THAMES)+'"/><path class="m-lea" d="'+mpath(M_LEA)+'"/>'+
+    g('m-rc',M_ROADS)+g('m-hc',M_HWY)+g('m-r',M_ROADS)+g('m-h',M_HWY);
+  list.forEach(function(e){if(e.myst&&MAPPOS[e.id]){var p=mproj(MAPPOS[e.id]);s+='<circle class="m-myst" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="24"/>';}});
+  return '<svg class="mbase" viewBox="0 0 '+MW.toFixed(1)+' '+MH+'" preserveAspectRatio="none" aria-hidden="true">'+s+'</svg>';}
+function mxy(ll){var p=mproj(ll);return ' data-x="'+p[0].toFixed(1)+'" data-y="'+p[1].toFixed(1)+'"';}
 function mapView(list){
-  var pins='',sel=null,i;
-  for(i=0;i<list.length;i++)if(list[i].id===S.mapSel)sel=list[i];
+  var sel=null,i;for(i=0;i<list.length;i++)if(list[i].id===S.mapSel)sel=list[i];
   if(!sel&&list.length)sel=list[0];
-  for(i=0;i<list.length;i++){var e=list[i],ll=MAPPOS[e.id]||[-0.11,51.515],p=mapXY(ll),ed=MAPEDGE[e.id];
-    var x=ed?ed[1]:Math.max(6,Math.min(94,p[0])),y=ed?ed[2]:Math.max(12,Math.min(90,p[1]));
-    var dark=['Sports','Sport','Theatre','Comedy','Surprise'].indexOf(e.cat)>-1&&!e.myst;
-    pins+='<button class="mpin'+(dark?' lt':'')+(e.myst?' myst':'')+(e.partner?' newp':'')+(sel&&sel.id===e.id?' on':'')+'" data-act="mpin" data-v="'+e.id+'" '+
-      'style="left:'+x.toFixed(1)+'%;top:'+y.toFixed(1)+'%;--cat:'+(CAT[e.cat]||PINK)+'" aria-label="'+esc(e.title)+', '+e.cr+' credits">'+
-      '<span class="hd">'+e.cr+'</span><span class="tl"></span>'+(ed?'<span class="el">'+ed[0]+'</span>':'')+'</button>';}
-  var you=mapXY([-0.045,51.537]),card;
-  if(sel)card='<div class="mapcard'+(sel.myst?' myst':'')+'" style="--cat:'+(CAT[sel.cat]||PINK)+'"><span class="sw"></span><div class="bd">'+
-      '<p class="lab">'+esc(sel.myst?'Surprise · exact spot sent on the day':sel.cat)+'</p><p class="nm">'+esc(sel.title)+'</p>'+
-      '<p class="mt">'+esc(when(sel))+' · '+esc(venue(sel))+' · '+sel.cr+' cr</p>'+
-      '<button class="btn" style="margin-top:10px" data-act="open" data-v="'+sel.id+'">See the event</button></div></div>';
-  else card='<p class="sub" style="padding:16px 0">Nothing on the map for that. Try another filter.</p>';
-  return '<div class="mapwrap"><div class="dmap" role="group" aria-label="Map of events">'+mapBase(list)+
-    '<span class="mapyou" style="left:'+you[0].toFixed(1)+'%;top:'+you[1].toFixed(1)+'%"><i></i><b>You</b></span>'+pins+'</div>'+card+'</div>';}
+  var labs=M_LABELS.map(function(l){return '<span class="mlab'+(l[3]===2?' l2':'')+(l[4]?' '+l[4]:'')+'"'+mxy([l[1],l[2]])+'><b>'+l[0]+'</b></span>';}).join('');
+  var pins=list.map(function(e){var dark=['Sports','Sport','Theatre','Comedy'].indexOf(e.cat)>-1&&!e.myst;
+    return '<button class="mpin'+(dark?' lt':'')+(e.myst?' myst':'')+(e.partner?' newp':'')+(sel&&sel.id===e.id?' on':'')+'" data-act="mpin" data-v="'+e.id+'"'+mxy(MAPPOS[e.id]||[-0.11,51.515])+
+      ' style="--cat:'+(CAT[e.cat]||PINK)+'" aria-label="'+esc(e.title)+', '+e.cr+' credits">'+
+      '<span class="pw"><span class="hd">'+e.cr+'</span><span class="tl"></span>'+(e.partner?'<span class="nw">New</span>':'')+'</span>'+
+      '<span class="nm">'+esc(e.title)+'</span></button>';}).join('');
+  var ctl='<div class="mctl"><button class="dsk" data-act="mzin" aria-label="Zoom in">'+ico('plus',18)+'</button><button class="dsk" data-act="mzout" aria-label="Zoom out">'+ico('minus',18)+'</button>'+
+    '<button data-act="mloc" aria-label="Show where I am">'+ico('locate',18)+'</button><button data-act="mfit" aria-label="Show every event">'+ico('fit',18)+'</button></div>';
+  var cards=list.length?list.map(function(e){
+    return '<button class="mcard'+(sel&&sel.id===e.id?' on':'')+'" data-act="open" data-v="'+e.id+'" data-id="'+e.id+'" style="--cat:'+(CAT[e.cat]||PINK)+'">'+
+      '<span class="vart mth'+(e.myst?' myst':'')+'">'+(e.myst?'':clip(e))+'</span>'+
+      '<span class="mbd"><span class="lab">'+esc(e.myst?'Surprise · spot sent on the day':e.cat)+'</span><span class="mnm">'+esc(e.title)+'</span>'+
+      '<span class="mmt">'+esc(when(e))+' · '+esc(venue(e))+'</span>'+
+      '<span class="mft"><span class="mcr">'+e.cr+' cr</span>'+(e.partner?'<span class="mleft">'+e.left+' left</span>':'')+'<span class="mgo">'+ico('chev',16)+'</span></span></span></button>';}).join(''):
+    '<div class="mempty"><p class="sub">Nothing on the map for that. Try another filter.</p></div>';
+  return '<div class="mapwrap"><div class="dmap" id="dmap" role="group" aria-label="Map of events. Drag to move, pinch or scroll to zoom.">'+mapSvg(list)+
+    '<div class="mlayer">'+labs+'<span class="mapyou"'+mxy(MYOU)+'><i></i></span>'+pins+'</div>'+ctl+'</div>'+
+    '<div class="mcards" id="mcards">'+cards+'</div></div>';}
+
+/* map view state, kept across re-renders: centre in map units and zoom in px per unit */
+var MV=null,MAP=null,MP={},MLAST=null;
+function mapMeasure(){MAP.cw=MAP.el.clientWidth;MAP.ch=MAP.el.clientHeight;MAP.zmin=Math.max(MAP.cw/MW,MAP.ch/MH);}
+function mapClamp(v){var z0=MAP.zmin;v.z=Math.max(z0,Math.min(z0*9,v.z));
+  /* the centre can reach the edge of the drawn area, so Croydon or Dartford can sit mid-screen above the cards */
+  v.cx=Math.max(0,Math.min(MW,v.cx));v.cy=Math.max(0,Math.min(MH,v.cy));return v;}
+function mapPad(){var ov=MAP.cards&&getComputedStyle(MAP.cards).position==='absolute'?MAP.cards.offsetHeight+16:0;return {t:56,r:34,b:40+ov,l:28};}
+function mapFitView(lls){
+  var pd=mapPad(),x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  if(!lls.length)lls=[[-0.09,51.52]];
+  lls.forEach(function(ll){var p=mproj(ll);x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});
+  var aw=Math.max(40,MAP.cw-pd.l-pd.r),ah=Math.max(40,MAP.ch-pd.t-pd.b);
+  var v={z:Math.min(aw/Math.max(x1-x0,1),ah/Math.max(y1-y0,1),MAP.zmin*5)};
+  v.cx=(x0+x1)/2-(pd.l-pd.r)/2/v.z;v.cy=(y0+y1)/2-(pd.t-pd.b)/2/v.z;
+  return mapClamp(v);}
+/* first view: the events around Hackney; Croydon and Dartford are a pinch or a swipe away */
+function mapCore(list){var all=list.map(function(e){return MAPPOS[e.id]||[-0.11,51.515];});
+  var core=all.filter(function(ll,i){return (Math.abs(ll[0]-MYOU[0])<=0.12&&Math.abs(ll[1]-MYOU[1])<=0.075)||list[i].id===S.mapSel;});
+  return core.length>1?core:all;}
+function mapDraw(){var v=MV,vw=MAP.cw/v.z,vh=MAP.ch/v.z,x0=v.cx-vw/2,y0=v.cy-vh/2;
+  MAP.svg.setAttribute('viewBox',x0.toFixed(2)+' '+y0.toFixed(2)+' '+vw.toFixed(2)+' '+vh.toFixed(2));
+  var placed=[],i,it;
+  for(i=0;i<MAP.items.length;i++){it=MAP.items[i];it.sx=(it.x-x0)*v.z;it.sy=(it.y-y0)*v.z;it.n.style.transform='translate3d('+it.sx.toFixed(1)+'px,'+it.sy.toFixed(1)+'px,0)';}
+  /* declutter: a pin that would sit on top of a bigger one becomes a dot until you zoom in; the selected pin always wins */
+  MAP.pins.forEach(function(p){var hit=placed.some(function(q){return Math.abs(q.sx-p.sx)<38&&Math.abs(q.sy-p.sy)<32;});
+    p.n.classList.toggle('dot',hit);if(!hit)placed.push(p);
+    if(p.nm&&p.n.classList.contains('on')){var w=p.nm.offsetWidth,l=p.sx-w/2,r=p.sx+w/2;p.nm.style.marginLeft=(l<8?8-l:r>MAP.cw-8?MAP.cw-8-r:0).toFixed(0)+'px';}});
+  var lv=v.z/MAP.zmin;MAP.svg.style.setProperty('--zs',Math.min(1.9,Math.max(.8,Math.sqrt(lv)/1.4)).toFixed(2));
+  MAP.el.classList.toggle('z2',lv>=2.4);}
+/* pin priority for decluttering: selected, then the partner event, then list order */
+function mapOrder(){MAP.pins=MAP.items.filter(function(it){return it.n.classList.contains('mpin');});
+  MAP.pins.forEach(function(p,i){p.nm=p.n.querySelector('.nm');p.rank=(p.n.classList.contains('on')?0:p.n.classList.contains('newp')?1:2)*100+i;});
+  MAP.pins.sort(function(a,b){return a.rank-b.rank;});}
+function mapStop(){if(MAP&&MAP.anim){cancelAnimationFrame(MAP.anim);MAP.anim=0;}}
+function mapFly(t,dur){mapStop();var a={cx:MV.cx,cy:MV.cy,z:MV.z},t0=performance.now();dur=dur||480;
+  function step(now){if(!MAP)return;var k=Math.min(1,(now-t0)/dur),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    MV.z=a.z*Math.pow(t.z/a.z,e);MV.cx=a.cx+(t.cx-a.cx)*e;MV.cy=a.cy+(t.cy-a.cy)*e;mapClamp(MV);mapDraw();
+    MAP.anim=k<1?requestAnimationFrame(step):0;}
+  MAP.anim=requestAnimationFrame(step);}
+function mapZoomAt(sx,sy,f,v){v=v||MV;var ux=v.cx+(sx-MAP.cw/2)/v.z,uy=v.cy+(sy-MAP.ch/2)/v.z;
+  v.z=Math.max(MAP.zmin,Math.min(MAP.zmin*9,v.z*f));v.cx=ux-(sx-MAP.cw/2)/v.z;v.cy=uy-(sy-MAP.ch/2)/v.z;return mapClamp(v);}
+function mapCardTo(id,instant){var box=MAP.cards,c=box.querySelector('.mcard[data-id="'+id+'"]');if(!c)return;
+  MAP.quiet=performance.now()+700;
+  if(box.scrollWidth>box.clientWidth+2)box.scrollTo({left:c.offsetLeft-(box.clientWidth-c.offsetWidth)/2,behavior:instant?'auto':'smooth'});
+  else if(c.offsetTop<box.scrollTop||c.offsetTop+c.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTo({top:c.offsetTop-8,behavior:instant?'auto':'smooth'});}
+function mapSelect(id,o){if(!MAP||!MAP.list.length)return;o=o||{};var e=MAP.list[0];
+  MAP.list.forEach(function(x){if(x.id===id)e=x;});
+  S.mapSel=e.id;ssave();
+  [].forEach.call(MAP.el.querySelectorAll('.mpin'),function(n){n.classList.toggle('on',n.getAttribute('data-v')===e.id);});
+  mapOrder();mapDraw();
+  [].forEach.call(MAP.cards.querySelectorAll('.mcard'),function(n){n.classList.toggle('on',n.getAttribute('data-id')===e.id);});
+  if(o.card)mapCardTo(e.id,o.card==='instant');
+  if(o.fly){var p=mproj(MAPPOS[e.id]||[-0.11,51.515]),pd=mapPad(),sx=(p[0]-MV.cx)*MV.z+MAP.cw/2,sy=(p[1]-MV.cy)*MV.z+MAP.ch/2;
+    if(sx<pd.l||sx>MAP.cw-pd.r+34||sy<pd.t||sy>MAP.ch-pd.b){var t={z:Math.max(MV.z,MAP.zmin*1.6)};
+      t.cx=p[0]-(pd.l-pd.r)/2/t.z;t.cy=p[1]-(pd.t-pd.b)/2/t.z;mapFly(mapClamp(t));}}}
+function mapMount(list){
+  var el=$('dmap');if(!el){MAP=null;return;}
+  var key=list.map(function(e){return e.id;}).join(',');
+  MAP={el:el,svg:el.querySelector('.mbase'),cards:$('mcards'),list:list,anim:0,moved:0,quiet:0,
+    items:[].map.call(el.querySelectorAll('[data-x]'),function(n){return {n:n,x:+n.getAttribute('data-x'),y:+n.getAttribute('data-y')};})};
+  mapMeasure();mapOrder();
+  if(MV&&MV.key===key){mapClamp(MV);mapDraw();}
+  else{var t=mapFitView(mapCore(list));t.key=key;
+    if(MV){MV.key=key;mapClamp(MV);mapDraw();mapFly(t);}else{MV=t;mapDraw();}}
+  mapSelect(S.mapSel,{card:'instant'});
+  el.addEventListener('pointerdown',mapDown);
+  el.addEventListener('wheel',function(ev){ev.preventDefault();mapStop();var r=el.getBoundingClientRect();
+    mapZoomAt(ev.clientX-r.left,ev.clientY-r.top,Math.exp(-ev.deltaY*(ev.ctrlKey?0.01:0.0022)));mapDraw();},{passive:false});
+  el.addEventListener('dblclick',function(ev){if(ev.target.closest('.mctl,.mpin'))return;var r=el.getBoundingClientRect();
+    mapFly(mapZoomAt(ev.clientX-r.left,ev.clientY-r.top,2,{cx:MV.cx,cy:MV.cy,z:MV.z}));});
+  var st;MAP.cards.addEventListener('scroll',function(){if(performance.now()<MAP.quiet)return;clearTimeout(st);st=setTimeout(function(){
+    var box=MAP.cards;if(box.scrollWidth<=box.clientWidth+2)return;var mid=box.scrollLeft+box.clientWidth/2,best=null,bd=1e9;
+    [].forEach.call(box.querySelectorAll('.mcard'),function(c){var d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);if(d<bd){bd=d;best=c;}});
+    if(best&&best.getAttribute('data-id')!==S.mapSel)mapSelect(best.getAttribute('data-id'),{fly:true});},110);},{passive:true});
+  MAP.cards.addEventListener('mouseover',function(ev){var c=ev.target.closest('.mcard');
+    if(c&&MAP.cards.scrollWidth<=MAP.cards.clientWidth+2&&c.getAttribute('data-id')!==S.mapSel)mapSelect(c.getAttribute('data-id'),{fly:true});});
+  if(window.ResizeObserver)new ResizeObserver(function(){if(MAP&&MAP.el===el){mapMeasure();mapClamp(MV);mapDraw();}}).observe(el);}
+function mpGesture(){var k=Object.keys(MP);if(!k.length)return null;var a=MP[k[0]];if(k.length===1)return {x:a.x,y:a.y,d:0,n:1};
+  var b=MP[k[1]];return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,d:Math.hypot(a.x-b.x,a.y-b.y),n:2};}
+function mapDown(ev){if(!MAP||ev.button>0||ev.target.closest('.mctl'))return;mapStop();
+  var r=MAP.el.getBoundingClientRect();MP[ev.pointerId]={x:ev.clientX-r.left,y:ev.clientY-r.top};
+  if(Object.keys(MP).length===1)MAP.moved=0;MLAST=mpGesture();MAP.el.classList.add('grab');}
+window.addEventListener('pointermove',function(ev){if(!MAP||!(ev.pointerId in MP))return;
+  var r=MAP.el.getBoundingClientRect();MP[ev.pointerId]={x:ev.clientX-r.left,y:ev.clientY-r.top};
+  var cur=mpGesture();if(!MLAST||cur.n!==MLAST.n){MLAST=cur;return;}
+  var dx=cur.x-MLAST.x,dy=cur.y-MLAST.y;MAP.moved+=Math.abs(dx)+Math.abs(dy);
+  if(cur.n===2&&MLAST.d>0)mapZoomAt(cur.x,cur.y,cur.d/MLAST.d);
+  MV.cx-=dx/MV.z;MV.cy-=dy/MV.z;mapClamp(MV);mapDraw();MLAST=cur;});
+function mapUp(ev){if(!(ev.pointerId in MP))return;delete MP[ev.pointerId];MLAST=mpGesture();
+  if(MAP&&!MLAST){MAP.el.classList.remove('grab');if(MAP.moved>6){MAP.dragged=true;setTimeout(function(){if(MAP)MAP.dragged=false;},0);}}}
+window.addEventListener('pointerup',mapUp);window.addEventListener('pointercancel',mapUp);
+function mapCtl(a){if(!MAP)return;var t;
+  if(a==='mfit')t=mapFitView(MAP.list.map(function(e){return MAPPOS[e.id]||[-0.11,51.515];}));
+  else if(a==='mloc'){var p=mproj(MYOU);t=mapClamp({z:Math.max(MV.z,MAP.zmin*3),cx:p[0],cy:p[1]});}
+  else t=mapZoomAt(MAP.cw/2,MAP.ch/2,a==='mzin'?1.8:1/1.8,{cx:MV.cx,cy:MV.cy,z:MV.z});
+  mapFly(t);}
+function refreshResults(){$('dres').innerHTML=discoverResults();observeVideos();if(S.dview==='map')mapMount(filtered());else MAP=null;}
 
 /* ---------------------------------------------------------------- event and booking */
 function scrEvent(){
@@ -277,7 +458,7 @@ function scrEvent(){
     (e.wave?'<div><p style="font:700 13px/1.2 var(--font-mono)">Wave '+e.wave+' partner</p><p class="lab" style="margin-top:4px">member allocation</p></div>':''));
   var avail=!e.partner||e.live;
   return '<div class="evgrid"><div class="evmedia">'+
-    '<div class="vart hero'+(e.myst?' myst':'')+'" style="--cat:'+c+'">'+(e.myst?'<span class="vq" aria-hidden="true">???</span>':clip(e)+'<span class="vshape"></span>')+
+    '<div class="vart hero'+(e.myst?' myst':'')+'" style="--cat:'+c+'">'+(e.myst?'':clip(e)+'<span class="vshape"></span>')+
       '<button class="scrim tl backbtn" data-act="go" data-v="discover" aria-label="Back to Discover">← Back</button>'+
       '<span class="scrim bl">'+esc(e.myst?'Surprise':e.cat)+' · '+esc(e.tag)+'</span></div></div>'+
    '<div class="evbody"><p class="lab" style="margin-top:4px">'+esc(e.meta)+'</p><h1 class="evname">'+esc(e.title)+'</h1>'+
@@ -287,10 +468,24 @@ function scrEvent(){
     '<div class="whycard" style="margin-top:16px;--cat:'+c+'"><p class="lab" style="color:var(--ink)">Why you are seeing this</p><p class="sub" style="margin-top:7px;color:var(--ink)">'+esc(e.why)+'</p></div>'+
     '<p class="lab" style="margin-top:20px">The night, roughly</p><div class="plan">'+plan+'</div>'+
     '<div class="sticky-cta"><div class="duo"><button class="btn ghost" data-act="go" data-v="group">Plan together</button>'+
-      '<button class="btn" data-act="go" data-v="checkout"'+(avail?'':' disabled')+'>'+(avail?'Use '+e.cr+' credits':'Not on sale')+'</button></div></div>'+
+      '<button class="btn" data-act="go" data-v="checkout"'+(avail?'':' disabled')+'>'+(avail?(bal()>=e.cr?'Use ':'Book · ')+e.cr+' credits':'Not on sale')+'</button></div></div>'+
    '</div></div>';}
+/* credits needed for a booking; a plus-one is free from Select up, otherwise it costs the member price */
+function p1Cost(e){return S.plusOne&&!freeP1()?e.cr:0;}
+function need(e){return e.cr+p1Cost(e);}
+/* the cheapest mix of credit packs that covers a shortfall (fewest spare credits on a tie) */
+function packsFor(over){var best=null,a,b,c,d,mx=Math.ceil(over/150);
+  for(d=0;d<=mx;d++)for(c=0;c<=4;c++)for(b=0;b<=6;b++)for(a=0;a<=6;a++){
+    var n=a*10+b*25+c*60+d*150,p=a*14+b*32+c*69+d*159;
+    if(n<over||!n)continue;
+    if(!best||p<best.p||(p===best.p&&n<best.n))best={n:n,p:p,mix:[[150,d],[60,c],[25,b],[10,a]]};}
+  if(!best)return null;
+  var parts=best.mix.filter(function(x){return x[1];});
+  best.label=parts.length===1&&parts[0][1]>1?parts[0][1]+' × '+parts[0][0]+' credits':
+    parts.map(function(x){return x[1]>1?x[1]+' × '+x[0]:x[0];}).join(' + ')+' credits';
+  return best;}
 function scrCheckout(){
-  var e=byId(S.eventId),b=bal(),over=Math.max(0,e.cr-b);
+  var e=byId(S.eventId),b=bal(),nd=need(e),over=Math.max(0,nd-b),pk=over?packsFor(over):null;
   return '<div class="obar"><button class="backb" data-act="go" data-v="event">'+ico('back',20)+'Event</button></div>'+
    '<h1 class="t">Confirm</h1>'+
    '<div class="card" style="margin-top:14px">'+
@@ -298,15 +493,18 @@ function scrCheckout(){
      '<div style="flex:1;min-width:0"><p style="font:italic 400 19px/1.2 var(--font-serif)">'+esc(e.title)+'</p><p class="sub" style="font-size:11.5px;margin-top:2px">'+esc(e.meta)+'</p></div></div>'+
      '<hr class="hair" style="margin:14px 0">'+
      '<div class="row-b"><p class="sub">You · '+tier().name+'</p><p class="mono" style="font-size:12px">'+e.cr+' cr</p></div>'+
-     '<div class="row-b" style="margin-top:8px"><p class="sub">Jonah · free monthly plus-one</p><p class="mono" style="font-size:12px;color:var(--green)">'+(S.plusOne?'0 cr':'—')+'</p></div>'+
+     '<div class="row-b" style="margin-top:8px"><p class="sub">Your balance</p><p class="mono" style="font-size:12px">'+b+' cr</p></div>'+
+     (freeP1()?'<div class="row-b" style="margin-top:8px"><p class="sub">Jonah · free monthly plus-one</p><p class="mono" style="font-size:12px;color:var(--green)">'+(S.plusOne?'0 cr':'—')+'</p></div>':
+       '<div class="row-b" style="margin-top:8px"><p class="sub">Jonah · plus-one at your price</p><p class="mono" style="font-size:12px">'+(S.plusOne?e.cr+' cr':'—')+'</p></div>')+
      '<button class="chip'+(S.plusOne?' on':'')+'" style="margin-top:12px" data-act="plusone" aria-pressed="'+S.plusOne+'">'+(S.plusOne?'Plus-one added':'Add plus-one')+'</button></div>'+
    '<p class="lab" style="margin-top:20px">Paying with</p>'+
    '<div class="card" style="margin-top:8px;display:flex;align-items:center;gap:12px">'+
      '<div aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:8px;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font:700 11px/1 var(--font-mono)">'+(over?'£':'CR')+'</div>'+
      '<div><p style="font-weight:700;font-size:13.5px">'+(over?'Card ending 4417':'Your credits')+'</p>'+
-     '<p class="sub" style="font-size:11.5px">'+(over?('Credits cover '+Math.min(b,e.cr)+' cr; '+over+' cr topped up at £1.15'):'Credits only, nothing to pay tonight')+'</p></div></div>'+
-   '<div class="row-b" style="margin-top:20px"><p class="lab">Total tonight</p><p style="font:800 24px/1 var(--font-display)">'+(over?gbp(over*1.15):e.cr+' credits')+'</p></div>'+
-   '<button class="btn" style="margin-top:16px" data-act="confirm">Confirm booking</button>'+
+     '<p class="sub" style="font-size:11.5px">'+(over?(b>0?b+' from your balance, plus ':'')+pk.label+' at '+gbp(pk.p)+(pk.n-over?' · '+(pk.n-over)+' left over for next time':''):'Credits only, nothing to pay tonight')+'</p></div></div>'+
+   (over?'<div class="card packnote" style="margin-top:10px"><p class="sub" style="font-size:12px;color:var(--ink)">'+(payg()?'<b>Explorer pays as it goes.</b> Credits come in packs, so you only buy when you book.':'<b>Short by '+over+' credits.</b> A one-off pack covers it, nothing recurring.')+'</p></div>':'')+
+   '<div class="row-b" style="margin-top:20px"><p class="lab">Total tonight</p><p style="font:800 24px/1 var(--font-display)">'+(over?gbp(pk.p):nd+' credits')+'</p></div>'+
+   '<button class="btn" style="margin-top:16px" data-act="confirm">'+(over?'Pay '+gbp(pk.p)+' and book':'Confirm booking')+'</button>'+
    '<p class="sub" style="margin-top:12px;font-size:11px;text-align:center">Free cancellation up to 24 hours before — credits return in full. No booking fee, ever.</p>';}
 function serialFor(id){var i=S.stack.indexOf(id);return '00'+(413+(i<0?0:i));}
 function scrStub(){var e=byId(S.eventId);
@@ -392,7 +590,7 @@ function scrStack(){
   up.concat(done).forEach(function(id){var c=byId(id).cat;cats[c]=(cats[c]||0)+1;});
   var nxt=byId(up[up.length-1]);
   var upcoming='<div class="stackcard tilt3" data-act="ticket" data-v="'+nxt.id+'" role="button" tabindex="0" style="--cat:'+(CAT[nxt.cat]||PINK)+'">'+
-    '<div class="vart'+(nxt.myst?' myst':'')+'" style="height:150px;border-radius:0">'+(nxt.myst?'<span class="vq">???</span>':clip(nxt)+'<span class="vshape"></span>')+
+    '<div class="vart'+(nxt.myst?' myst':'')+'" style="height:150px;border-radius:0">'+(nxt.myst?'':clip(nxt)+'<span class="vshape"></span>')+
       '<span class="scrim tl">'+up.length+' upcoming</span></div>'+
     '<div style="padding:14px 16px 16px"><p style="font:italic 400 21px/26px var(--font-serif)">'+esc(nxt.title)+'</p>'+
       '<p class="sub" style="font-size:12px;margin-top:3px">'+esc(nxt.meta)+'</p>'+
@@ -427,25 +625,30 @@ function scrGroup(){
 var TOPS=[['10','£14','£1.40 a credit'],['25','£32','£1.28 a credit'],['60','£69','£1.15 a credit'],['150','£159','£1.06 a credit · best rate']];
 function scrWallet(){
   var t=tier(),nextT=null;for(var i=0;i<TIERS.length-1;i++)if(TIERS[i].k===S.plan)nextT=TIERS[i+1];
+  if(t.free)nextT=tierBy('select');
   var tops=TOPS.map(function(x,i){return '<div class="up'+(S.topUp===i?' on':'')+'"><div><b>'+x[0]+' credits</b><small>'+x[2]+' · '+x[1]+'</small></div>'+
     '<button class="buy" data-act="top" data-v="'+i+'" aria-pressed="'+(S.topUp===i)+'">'+(S.topUp===i?'Selected':'Select')+'</button></div>';}).join('');
   return '<div class="row-b"><h1 class="t">Credits</h1><span class="pill">'+bal()+' credits</span></div>'+
    '<div class="cols2"><div>'+
    '<div class="balcard tilt3"><div class="row-b" style="align-items:flex-end">'+
-       '<div><p style="font:800 52px/1 var(--font-display)">'+bal()+'</p><p class="mono" style="font-size:12px;margin-top:4px">of '+t.cr+' this month</p></div>'+
-       '<div style="text-align:right"><p class="lab" style="color:var(--ink)">'+t.name.replace('Encore ','')+' · monthly</p><p class="mono" style="font-size:10.5px;margin-top:5px">renews 9 Nov · '+t.rate+'</p></div></div>'+
+       '<div><p style="font:800 52px/1 var(--font-display)">'+bal()+'</p><p class="mono" style="font-size:12px;margin-top:4px">'+(t.free?'credits in your balance':'of '+t.cr+' this month')+'</p></div>'+
+       '<div style="text-align:right"><p class="lab" style="color:var(--ink)">'+t.name.replace('Encore ','')+(t.free?' · free':' · monthly')+'</p><p class="mono" style="font-size:10.5px;margin-top:5px">'+(t.free?'pay as you go · no monthly fee':'renews 9 Nov · '+t.rate)+'</p></div></div>'+
      '<div style="display:flex;gap:18px;margin-top:14px;padding-top:12px;border-top:1.5px solid rgba(23,19,15,.5)">'+
-       '<div><p class="lab" style="color:var(--ink)">Rolled over</p><p style="font-weight:700;font-size:13px;margin-top:3px">18 credits</p></div>'+
+       (t.free?'<div><p class="lab" style="color:var(--ink)">Monthly fee</p><p style="font-weight:700;font-size:13px;margin-top:3px">£0</p></div>':
+       '<div><p class="lab" style="color:var(--ink)">Rolled over</p><p style="font-weight:700;font-size:13px;margin-top:3px">18 credits</p></div>')+
        '<div><p class="lab" style="color:var(--ink)">Public value used</p><p style="font-weight:700;font-size:13px;margin-top:3px">£1,240 this year</p></div></div></div>'+
-   (nextT?'<p class="lab" style="margin-top:24px">Upgrade</p><p class="sub" style="margin-top:8px">We found a plan that gives you more nights per pound. Move up and secure the better rate from next month.</p>'+
+   (nextT?'<p class="lab" style="margin-top:24px">'+(t.free?'Going out most months?':'Upgrade')+'</p><p class="sub" style="margin-top:8px">'+
+     (t.free?'A plan drops credits in every month, rolling over, with member-only releases and a free plus-one. It starts today.':
+     'We found a plan that gives you more nights per pound. Move up and secure the better rate from next month.')+'</p>'+
      '<div class="stackcard tilt2" style="margin-top:12px;cursor:default"><p class="mono" style="background:var(--ink);color:var(--paper);font-size:10px;font-weight:700;letter-spacing:.1em;text-align:center;padding:7px">SUGGESTED FOR YOU</p>'+
        '<div style="padding:14px 16px 16px"><div class="row-b"><div><p style="font:800 24px/1 var(--font-display)">'+nextT.cr+' credits</p><p class="mono" style="font-size:11px;color:var(--mut);margin-top:5px">'+nextT.rate+'</p></div>'+
          '<p style="font:800 22px/1 var(--font-display)">'+nextT.price+'<span class="sub" style="font-size:11px">/mo</span></p></div>'+
-       '<button class="btn" style="margin-top:12px" data-act="plan" data-v="'+nextT.k+'">Upgrade to '+nextT.name+'</button></div></div>'
+       '<button class="btn" style="margin-top:12px" data-act="plan" data-v="'+nextT.k+'">'+(t.free?'Switch to ':'Upgrade to ')+nextT.name+'</button></div></div>'
      :'<div class="nudge" style="margin-top:18px"><p class="sub" style="color:var(--ink)"><b>You are on Icon</b> — the best rate we do. Top up if you need more this month.</p></div>')+
    '</div><div>'+
-   '<p class="lab" style="margin-top:22px">Buy one-time credits</p>'+
-   '<p class="sub" style="margin-top:8px;font-size:12.5px">Without changing your monthly plan. Unused credits roll over while you are a member, up to two months\' worth.</p>'+
+   '<p class="lab" style="margin-top:22px">'+(t.free?'Buy credit packs':'Buy one-time credits')+'</p>'+
+   '<p class="sub" style="margin-top:8px;font-size:12.5px">'+(t.free?'Explorer pays as it goes: buy a pack when you want to book. Bigger packs, better rate.':
+     'Without changing your monthly plan. Unused credits roll over while you are a member, up to two months\' worth.')+'</p>'+
    '<div style="margin-top:6px">'+tops+'</div>'+
    '<button class="btn" style="margin-top:14px" data-act="buytop">Buy '+TOPS[S.topUp][0]+' credits · '+TOPS[S.topUp][1]+'</button>'+
    '<p class="sub" style="margin-top:12px;font-size:11px">Top-ups are one-off. Nothing recurring is added to your plan.</p></div></div>';}
@@ -458,10 +661,11 @@ function scrProfile(){
     '<span class="tx">'+r[1]+'</span><span class="ct">'+r[2]+'</span><span class="ch">'+ico('chev',16)+'</span></button>';}).join('');
   return '<div style="text-align:center;margin-top:10px"><div class="avatar">MK</div><h1 class="t" style="margin-top:14px">Maya Kaur</h1>'+
      '<p class="mono" style="font-size:11px;color:var(--mut);margin-top:6px">Insider · member since Sept 2026 · Hackney</p></div>'+
-   '<div class="statrow"><div><b>'+bal()+' credits</b><p class="sub" style="font-size:11.5px">Remaining</p></div><div><b>9 Nov</b><p class="sub" style="font-size:11.5px">Cycle renewal</p></div></div>'+
+   '<div class="statrow"><div><b>'+bal()+' credits</b><p class="sub" style="font-size:11.5px">Remaining</p></div>'+
+     (t.free?'<div><b>£0</b><p class="sub" style="font-size:11.5px">Monthly fee</p></div>':'<div><b>9 Nov</b><p class="sub" style="font-size:11.5px">Cycle renewal</p></div>')+'</div>'+
    '<div style="margin-top:6px">'+h+'</div>';}
 function scrStatus(){
-  var levels=['Explorer','Insider','Headliner','Icon'];
+  var levels=['Newcomer','Insider','Headliner','Icon'];
   var h=levels.map(function(l,i){return '<div style="flex:1;text-align:center"><div style="height:6px;border-radius:6px;background:'+(i<=1?'var(--green)':'var(--paper-sunk)')+'"></div>'+
     '<p class="mono" style="font-size:10px;margin-top:7px;color:'+(i<=1?'var(--ink)':'var(--mut)')+'">'+l+'</p></div>';}).join('');
   var perks=[['48-hour early access','On every member-only release','Unlocked',GREENB],['20 bonus credits a month','From Headliner onwards','3 nights away',YEL],
@@ -481,7 +685,7 @@ function renderNav(){var cur=curTab();
   $('tabs').innerHTML=NAV.map(function(n){return '<button data-act="go" data-v="'+n[0]+'" class="'+(cur===n[0]?'on':'')+'"'+(cur===n[0]?' aria-current="page"':'')+'>'+ico(n[2],24)+'<span>'+n[1]+'</span></button>';}).join('');
   $('side').innerHTML='<div class="brand">'+logoMark(72)+'<small>Another one.</small></div>'+
     '<nav aria-label="Encore">'+NAV.map(function(n){return '<button data-act="go" data-v="'+n[0]+'" class="'+(cur===n[0]?'on':'')+'"'+(cur===n[0]?' aria-current="page"':'')+'>'+ico(n[2],20)+n[1]+'</button>';}).join('')+'</nav>'+
-    '<div class="foot"><div class="crbox"><p class="lab" style="margin:0 0 8px">Balance</p><b>'+bal()+'</b><p>credits · '+tier().name.replace('Encore ','')+' · renews 9 Nov</p></div>'+
+    '<div class="foot"><div class="crbox"><p class="lab" style="margin:0 0 8px">Balance</p><b>'+bal()+'</b><p>credits · '+tier().name.replace('Encore ','')+' · '+renewTxt()+'</p></div>'+
     '<button class="me" data-act="go" data-v="profile"><span class="av">MK</span><span><b>Maya Kaur</b><small>Insider · Hackney</small></span></button></div>';}
 
 var SCREENS={landing:scrLanding,connect:scrConnect,taste:scrTaste,plans:scrPlans,discover:scrDiscover,event:scrEvent,checkout:scrCheckout,stub:scrStub,
@@ -494,6 +698,7 @@ function render(anim){
   scr.innerHTML=fn();
   renderNav();
   observeVideos();
+  if(S.screen==='discover'&&S.dview==='map')mapMount(filtered());else MAP=null;
   document.title=({landing:'Encore',discover:'Discover · Encore',event:byId(S.eventId).title+' · Encore',stack:'The Stack · Encore',wallet:'Credits · Encore',profile:'Profile · Encore'})[S.screen]||'Encore';
   ssave();}
 function go(s){S.screen=s;render(true);window.scrollTo(0,0);}
@@ -520,7 +725,7 @@ function partnerSync(){
   var onboarding=ONBOARD.indexOf(S.screen)>-1;
   if(!before&&after&&!onboarding)toast('New from '+PARTNER.name,esc(after.title)+' · '+after.cr+' credits · '+after.left+' member seats');
   if(before&&!after&&['event','checkout'].indexOf(S.screen)>-1&&S.eventId===before.id){S.screen='discover';toast('No longer on sale',esc(before.title)+' isn\'t available to members right now.');}
-  if(S.screen==='discover'&&document.activeElement&&document.activeElement.id==='q'){syncEvents();$('dres').innerHTML=discoverResults();observeVideos();renderNav();return;}
+  if(S.screen==='discover'&&document.activeElement&&document.activeElement.id==='q'){syncEvents();refreshResults();renderNav();return;}
   rerenderKeepScroll();}
 function handleReset(){
   S.epoch=epoch();
@@ -539,17 +744,25 @@ document.addEventListener('click',function(ev){
   if(a==='go')go(v);
   else if(a==='signup')go('taste');
   else if(a==='pick'){var i=S.picked.indexOf(v);if(i>-1)S.picked.splice(i,1);else S.picked.push(v);el.classList.toggle('on');el.setAttribute('aria-pressed',i<0);ssave();}
-  else if(a==='plan'){S.plan=v;if(S.screen==='wallet'){S.credits=tier().cr;render(false);toast('Upgrade scheduled','You move to '+tier().name+' on 9 Nov. Nothing changes until then.');}else rerenderKeepScroll();}
-  else if(a==='join'){S.credits=tier().cr;S.spent=0;go('discover');toast('Welcome to '+tier().name,tier().cr+' credits are in your balance.');}
+  else if(a==='plan'){var wasFree=payg();S.plan=v;
+    if(S.screen!=='wallet')rerenderKeepScroll();
+    else if(wasFree){S.credits+=tier().cr;S.plusOne=freeP1();render(false);toast('Welcome to '+tier().name,tier().cr+' credits are in your balance now, on top of what you had.');}
+    else{S.credits=tier().cr;render(false);toast('Upgrade scheduled','You move to '+tier().name+' on 9 Nov. Nothing changes until then.');}}
+  else if(a==='join'){S.credits=tier().cr;S.spent=0;S.plusOne=freeP1();go('discover');
+    if(payg())toast('Welcome to '+tier().name,'Your weekly edit is ready. Buy credits whenever something grabs you.');
+    else toast('Welcome to '+tier().name,tier().cr+' credits are in your balance.');}
   else if(a==='open'){S.eventId=v;go('event');}
   else if(a==='ticket'){S.ticketId=v;go('ticket');}
-  else if(a==='dview'){S.dview=v;$('dres').innerHTML=discoverResults();observeVideos();ssave();}
-  else if(a==='mpin'){S.mapSel=v;$('dres').innerHTML=discoverResults();ssave();}
+  else if(a==='dview'){S.dview=v;refreshResults();ssave();}
+  else if(a==='mpin'){if(!MAP||MAP.dragged)return;mapSelect(v,{fly:true,card:'smooth'});}
+  else if(a==='mfit'||a==='mloc'||a==='mzin'||a==='mzout')mapCtl(a);
   else if(a==='plusone'){S.plusOne=!S.plusOne;rerenderKeepScroll();}
   else if(a==='confirm'){var e=byId(S.eventId);
     if(e.partner){P=pload();var pe=partnerEventForMember();if(!pe){go('discover');toast('No longer on sale','These seats were just taken off sale.');return;}e=pe;}
-    S.spent=Math.min(S.credits,S.spent+e.cr);if(S.stack.indexOf(e.id)<0)S.stack.push(e.id);
-    if(e.partner){var seats=S.plusOne?2:1;S.peBook={id:e.id,cr:e.cr,seats:seats};
+    var nd=need(e),over=Math.max(0,nd-bal()),pk=over?packsFor(over):null;
+    if(pk)S.credits+=pk.n;
+    S.spent+=nd;if(S.stack.indexOf(e.id)<0)S.stack.push(e.id);
+    if(e.partner){var seats=S.plusOne?2:1;S.peBook={id:e.id,cr:nd,seats:seats};
       pushInbox({id:'m'+Date.now(),perf:e.perf,seats:seats,cr:e.cr,who:'Maya K. · Hackney',at:nowD().getTime()});}
     go('stub');}
   else if(a==='share')toast('Plan shared','Jonah and Ellis can see the meeting point, doors and the way home.');
@@ -566,10 +779,10 @@ document.addEventListener('click',function(ev){
 document.addEventListener('keydown',function(ev){if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches&&ev.target.matches('[role=button][data-act]')){ev.preventDefault();ev.target.click();}});
 document.addEventListener('input',function(ev){var el=ev.target;var a=el.getAttribute&&el.getAttribute('data-act');
   if(a==='radius'){S.radius=parseInt(el.value,10);$('radTxt').textContent=radiusTxt();ssave();}
-  else if(a==='q'){S.q=el.value;$('dres').innerHTML=discoverResults();observeVideos();ssave();}});
-document.addEventListener('change',function(ev){var el=ev.target;if(el&&el.id==='chipsel'){S.chip=el.value;$('dres').innerHTML=discoverResults();observeVideos();ssave();}});
+  else if(a==='q'){S.q=el.value;refreshResults();ssave();}});
+document.addEventListener('change',function(ev){var el=ev.target;if(el&&el.id==='chipsel'){S.chip=el.value;refreshResults();ssave();}});
 var _cols=gridCols();
-window.addEventListener('resize',function(){var n=gridCols();if(n!==_cols){_cols=n;if(S.screen==='discover'&&S.dview!=='map'){$('dres').innerHTML=discoverResults();observeVideos();}}});
+window.addEventListener('resize',function(){var n=gridCols();if(n!==_cols){_cols=n;if(S.screen==='discover'&&S.dview!=='map'){refreshResults();}}});
 
 /* ---------------------------------------------------------------- start */
 (function(){if(S.epoch!==epoch())handleReset();render(true);})();
