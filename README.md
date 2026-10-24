@@ -1,2 +1,0 @@
-# Encore
-Encore Prototype
